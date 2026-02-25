@@ -3,297 +3,548 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FocusDeck | Personal Study Dashboard</title>
+    <title>JEE Prep Master | Study Dashboard</title>
     
-    <!-- External Libraries (CDN) -->
+    <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --danger: #ef4444;
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --bg-card: #16161f;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #6b6b7b;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             --success: #10b981;
-            --border: #334155;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --physics: #3b82f6;
+            --chemistry: #10b981;
+            --math: #f59e0b;
+            --border: #2a2a3a;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --glow: 0 0 20px rgba(99, 102, 241, 0.3);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
+            line-height: 1.6;
         }
 
-        /* Layout Grid */
-        .container {
-            max-width: 1400px;
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+
+        /* Layout */
+        .dashboard {
+            max-width: 1600px;
             margin: 0 auto;
+            padding: 20px;
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            grid-template-rows: auto auto 1fr;
+            grid-template-columns: repeat(12, 1fr);
             gap: 20px;
             grid-template-areas: 
-                "header header header"
-                "timer exam stats"
-                "form chart logs";
+                "header header header header header header header header header header header header"
+                "timer timer timer exam exam exam stats stats stats stats stats stats"
+                "form form form chart chart chart chart chart chart chart chart chart"
+                "notes notes notes notes notes notes chart chart chart chart chart chart"
+                "logs logs logs logs logs logs logs logs logs logs logs logs";
         }
 
         /* Responsive */
-        @media (max-width: 1024px) {
-            .container { grid-template-columns: 1fr 1fr; }
-            .logs { grid-column: span 2; }
-        }
-        @media (max-width: 768px) {
-            .container { display: flex; flex-direction: column; }
+        @media (max-width: 1400px) {
+            .dashboard {
+                grid-template-columns: repeat(6, 1fr);
+                grid-template-areas: 
+                    "header header header header header header"
+                    "timer timer exam exam stats stats"
+                    "form form chart chart chart chart"
+                    "notes notes notes notes chart chart"
+                    "logs logs logs logs logs logs";
+            }
         }
 
-        /* Components */
+        @media (max-width: 900px) {
+            .dashboard {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        /* Header */
+        .header {
+            grid-area: header;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .logo span {
+            color: var(--accent-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Cards */
         .card {
-            background: var(--card-bg);
-            border-radius: 12px;
+            background: var(--bg-card);
+            border-radius: 16px;
             padding: 20px;
             border: 1px solid var(--border);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: var(--glow);
+        }
+
+        .card-header {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
-        h2 { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
-        h3 { font-size: 2rem; margin: 10px 0; }
-        
-        .header { grid-area: header; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .timer-area { grid-area: timer; }
-        .exam-area { grid-area: exam; }
-        .stats-area { grid-area: stats; }
-        .form-area { grid-area: form; }
-        .chart-area { grid-area: chart; }
-        .logs-area { grid-area: logs; }
-
-        /* Buttons & Inputs */
-        button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
+        .card-title {
+            font-size: 0.85rem;
             font-weight: 600;
-            transition: 0.2s;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        button:hover { background: var(--accent-hover); }
-        button.danger { background: var(--danger); }
-        button.outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-        
-        input, select, textarea {
-            background: #0f172a;
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 10px;
-            border-radius: 6px;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        input:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
 
-        /* Specific Styles */
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        /* Timer Section */
+        .timer-section {
+            grid-area: timer;
+        }
+
         .timer-display {
             font-size: 3.5rem;
             font-weight: 800;
-            font-variant-numeric: tabular-nums;
             text-align: center;
-            margin: 20px 0;
-            color: var(--success);
+            font-variant-numeric: tabular-nums;
+            background: linear-gradient(180deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 15px 0;
         }
-        
-        .timer-controls { display: flex; gap: 10px; justify-content: center; }
 
-        .exam-date-input { display: flex; gap: 10px; align-items: center; margin-top: auto; }
-        
-        .tag-pill {
-            background: rgba(59, 130, 246, 0.2);
-            color: #60a5fa;
-            padding: 2px 8px;
-            border-radius: 4px;
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .timer-btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Exam Section */
+        .exam-section {
+            grid-area: exam;
+        }
+
+        .exam-countdown {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .days-remaining {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--warning) 0%, #f97316 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .exam-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .exam-name {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .exam-input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .exam-input-group input {
+            flex: 1;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            grid-area: stats;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: var(--bg-tertiary);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .stat-item.physics .stat-value { color: var(--physics); }
+        .stat-item.chemistry .stat-value { color: var(--chemistry); }
+        .stat-item.math .stat-value { color: var(--math); }
+
+        /* Form Section */
+        .form-section {
+            grid-area: form;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
             font-size: 0.8rem;
-            margin-right: 5px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
         }
 
-        /* Table */
-        .log-table-container { overflow-x: auto; max-height: 300px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th { text-align: left; color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--card-bg); }
-        td { padding: 10px; border-bottom: 1px solid var(--border); }
-        tr:hover { background: rgba(255,255,255,0.02); }
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
 
-        /* Notes */
-        .notes-area { flex-grow: 1; }
-        textarea.notes { resize: none; height: 100%; min-height: 150px; }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
 
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a0a0b0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
+        }
+
+        /* Chart Section */
+        .chart-section {
+            grid-area: chart;
+            min-height: 350px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+
+        /* Notes Section */
+        .notes-section {
+            grid-area: notes;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            resize: none;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+        }
+
+        .notes-textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .notes-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        /* Logs Section */
+        .logs-section {
+            grid-area: logs;
+        }
+
+        .logs-table-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .logs-table th {
+            text-align: left;
+            padding: 12px 15px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+        }
+
+        .logs-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .logs-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .tag-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .tag-physics { background: rgba(59, 130, 246, 0.2); color: var(--physics); }
+        .tag-chemistry { background: rgba(16, 185, 129, 0.2); color: var(--chemistry); }
+        .tag-math { background: rgba(245, 158, 11, 0.2); color: var(--math); }
+        .tag-other { background: rgba(139, 92, 246, 0.2); color: var(--accent-secondary); }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+
+        .delete-btn:hover {
+            color: var(--danger);
+        }
+
+        /* Streak Animation */
+        .streak-fire {
+            color: #f59e0b;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <!-- Header -->
-    <div class="header">
-        <h1><i class="fas fa-graduation-cap"></i> FocusDeck</h1>
-        <button onclick="clearData()" class="danger outline" title="Reset All Data"><i class="fas fa-trash"></i> Reset</button>
-    </div>
-
-    <!-- 1. Active Timer -->
-    <div class="card timer-area">
-        <h2>Active Timer</h2>
-        <div class="timer-display" id="activeTimer">00:00:00</div>
-        <div class="timer-controls">
-            <button onclick="startTimer()" id="startBtn"><i class="fas fa-play"></i> Start</button>
-            <button onclick="stopTimer()" id="stopBtn" class="outline" disabled><i class="fas fa-pause"></i> Stop</button>
-            <button onclick="resetTimer()" class="danger outline"><i class="fas fa-redo"></i> Reset</button>
-        </div>
-    </div>
-
-    <!-- 2. Exam Countdown -->
-    <div class="card exam-area">
-        <h2>Exam Countdown</h2>
-        <div id="examDisplay">
-            <h3 id="daysLeft">0</h3>
-            <p>Days Remaining</p>
-            <p id="examNameDisplay" style="color: var(--text-muted); font-size: 0.9rem;">No Exam Set</p>
-        </div>
-        <div class="exam-date-input">
-            <input type="text" id="examName" placeholder="Exam Name (e.g. Final Math)">
-            <input type="date" id="examDate">
-            <button onclick="setExam()">Set</button>
-        </div>
-    </div>
-
-    <!-- 3. Stats (Quick) -->
-    <div class="card stats-area">
-        <h2>Quick Stats</h2>
-        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-            <div>
-                <p class="text-muted">Total Hours</p>
-                <h3 id="totalHours">0</h3>
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h1>JEE <span>Prep Master</span></h1>
             </div>
-            <div>
-                <p class="text-muted">Sessions</p>
-                <h3 id="totalSessions">0</h3>
+            <div class="header-actions">
+                <button class="btn-secondary" onclick="exportData()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <button class="btn-secondary" onclick="document.getElementById('importFile').click()">
+                    <i class="fas fa-upload"></i> Import
+                </button>
+                <input type="file" id="importFile" style="display:none" onchange="importData(this)" accept=".json">
+                <button class="btn-danger" onclick="resetAllData()">
+                    <i class="fas fa-trash"></i> Reset
+                </button>
             </div>
         </div>
-    </div>
 
-    <!-- 4. Log Session Form -->
-    <div class="card form-area">
-        <h2>Log Session</h2>
-        <form id="logForm" onsubmit="addLog(event)">
-            <label>Subject / Tag</label>
-            <input type="text" id="tagInput" list="tagsList" placeholder="e.g. Math, Coding, History" required>
-            <datalist id="tagsList"></datalist>
-
-            <label>Duration (Minutes)</label>
-            <input type="number" id="durationInput" placeholder="Minutes" required>
-
-            <label>Date</label>
-            <input type="date" id="dateInput" required>
-
-            <label>Notes (Optional)</label>
-            <input type="text" id="notesInput" placeholder="What did you learn?">
-
-            <button type="submit" style="width: 100%; margin-top: 10px;">Save Session</button>
-        </form>
-    </div>
-
-    <!-- 5. Charts -->
-    <div class="card chart-area">
-        <h2>Analytics</h2>
-        <div style="height: 200px; position: relative;">
-            <canvas id="studyChart"></canvas>
-        </div>
-    </div>
-
-    <!-- 6. Logs Table -->
-    <div class="card logs-area">
-        <h2>Recent Logs</h2>
-        <div class="log-table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Tag</th>
-                        <th>Duration</th>
-                        <th>Notes</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="logTableBody">
-                    <!-- Rows injected via JS -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<script>
-    // --- State Management ---
-    let logs = JSON.parse(localStorage.getItem('studyLogs')) || [];
-    let exam = JSON.parse(localStorage.getItem('studyExam')) || { name: '', date: null };
-    
-    // Timer Variables
-    let timerInterval;
-    let seconds = 0;
-    let isRunning = false;
-
-    // --- Initialization ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // Set default date to today
-        document.getElementById('dateInput').valueAsDate = new Date();
-        
-        // Load Exam
-        if(exam.date) {
-            document.getElementById('examName').value = exam.name;
-            document.getElementById('examDate').value = exam.date;
-            updateExamCountdown();
-        }
-
-        // Load Tags Datalist
-        updateTagsDatalist();
-        
-        // Render UI
-        renderLogs();
-        updateStats();
-        initChart();
-    });
-
-    // --- Exam Timer Logic ---
-    function setExam() {
-        const name = document.getElementById('examName').value;
-        const date = document.getElementById('examDate').value;
-        
-        if(!date) return alert("Please pick a date");
-
-        exam = { name, date };
-        localStorage.setItem('studyExam', JSON.stringify(exam));
-        updateExamCountdown();
-    }
-
-    function updateExamCountdown() {
-        if(!exam.date) return;
-        
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        const target = new Date(exam.date);
-        
-        const diffTime = target - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        document.getElementById('daysLeft').innerText = diffDays;
-        document.getElementById('examNameDisplay').innerText = exam.name || "Exam";
-        
-        if(diffDays < 0) document.getElementById('daysLeft').innerText = "Done";
+        <!-- Timer Section -->
+        <div class="card timer-section">
+            <div class="card-header">
+                <span class="card-title">Active Timer</span>
+                <div class="card-icon" style="background: rgba(99, 102, 241, 0.2); color: var(--accent-primary);">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+            <div class="timer-display" id="timerDisplay">00:00:00</div>
+            <div class="timer-controls">
+                <button class="timer-btn btn-primary" id="startBtn" onclick="startTimer()">
+                    <i class="fas fa-play"></i> Start
+                </button>
+                <button class="timer-btn btn-secondary" id="pauseBtn" onclick="pauseTimer()" style="display:none;">
+                    <i class="fas fa-pause"></i> Pause
+                </button>
+                <button class="timer-btn btn-secondary" onclick="logTimerSession()">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button class="timer
