@@ -3,121 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEET Elite Dashboard</title>
+    <title>JEE Elite Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --accent: #06b6d4; --bio: #22c55e; --phy: #8b5cf6; --chem: #f59e0b; --text: #f8fafc; }
-        body { font-family: 'Segoe UI', system-ui; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        /* Header Profile Section */
-        .header { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #334155; }
-        .profile-pic { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; background: #334155; cursor: pointer; }
-        .welcome-text h1 { margin: 0; font-size: 1.5rem; color: var(--accent); }
-        
-        /* Dashboard Grid */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
-        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; position: relative; }
-        h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-top: 0; }
+        :root {
+            --bg-dark: #0b0f1a;
+            --card-bg: #161b2b;
+            --accent: #00d2ff;
+            --physics: #3b82f6;
+            --chem: #10b981;
+            --math: #f43f5e;
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+        }
 
-        /* Exam Tags */
-        .exam-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
-        .exam-card { background: #0f172a; padding: 12px; border-radius: 10px; border-left: 4px solid var(--accent); position: relative; }
-        .days-left { display: block; font-size: 1.8rem; font-weight: bold; margin: 5px 0; }
-        .delete-btn { position: absolute; top: 5px; right: 5px; color: #ef4444; cursor: pointer; font-size: 12px; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 30px;
+        }
 
-        /* Weekly Slots */
-        .weekly-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 15px; }
-        .day-col { background: #0f172a; padding: 10px; border-radius: 10px; text-align: center; }
-        .day-label { font-size: 10px; color: #64748b; font-weight: bold; }
-        .slot-input { width: 100%; background: transparent; border: none; color: var(--accent); text-align: center; font-size: 1.2rem; font-weight: bold; outline: none; }
+        .container { max-width: 1100px; margin: 0 auto; }
 
-        /* Inputs & Buttons */
-        input, select { background: #334155; border: 1px solid #475569; color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
-        .btn { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
-        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
+        /* Profile Header */
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .pfp-container {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            overflow: hidden;
+            cursor: pointer;
+            background: #1e293b;
+        }
+        .pfp-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Exam Grid - Additive */
+        .section-header { font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .exam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px; }
+        .exam-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #2d3748;
+            position: relative;
+        }
+        .exam-card .days { font-size: 2.5rem; font-weight: 800; display: block; margin: 10px 0; color: var(--accent); }
+        .delete-exam { position: absolute; top: 10px; right: 10px; cursor: pointer; color: var(--text-dim); }
+
+        /* Syllabus & Activity Grid */
+        .main-stats { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-bottom: 40px; }
+        .glass-card { background: var(--card-bg); border-radius: 20px; padding: 25px; border: 1px solid #2d3748; }
+
+        /* Weekly Layout - 7 Columns like the Image */
+        .weekly-scroll { 
+            display: grid; 
+            grid-template-columns: repeat(7, 1fr); 
+            gap: 15px; 
+            margin-bottom: 40px;
+        }
+        .day-card {
+            background: rgba(22, 27, 43, 0.6);
+            border: 1px solid #2d3748;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            min-height: 200px;
+        }
+        .day-title { font-size: 0.9rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid #2d3748; padding-bottom: 5px;}
         
-        #chartArea { width: 100%; max-width: 200px; margin: 0 auto; }
+        /* Inputs */
+        input, select { 
+            background: #0f172a; border: 1px solid #334155; color: white; 
+            padding: 12px; border-radius: 10px; margin-bottom: 10px; width: 100%;
+        }
+        .btn-glow {
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            border: none; color: white; padding: 12px; border-radius: 10px;
+            font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s;
+        }
+        .btn-glow:hover { box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); }
+
+        .tag-item {
+            background: #1e293b; color: var(--accent); font-size: 0.7rem; 
+            padding: 5px 10px; border-radius: 5px; margin: 5px 0; display: block;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <input type="file" id="imageInput" style="display:none" accept="image/*" onchange="loadPhoto(event)">
-        <img src="https://via.placeholder.com/80" id="userPhoto" class="profile-pic" onclick="document.getElementById('imageInput').click()">
-        <div class="welcome-text">
-            <h1>Future Doctor,</h1>
-            <p id="quote" style="margin:5px 0 0 0; color: #64748b; font-size: 0.9rem;">Success is the sum of small efforts repeated daily.</p>
+    <div class="profile-section">
+        <div class="pfp-container" onclick="document.getElementById('pfpInput').click()">
+            <img id="pfp" src="https://via.placeholder.com/100" alt="Your Photo">
+        </div>
+        <input type="file" id="pfpInput" hidden accept="image/*" onchange="uploadPFP(event)">
+        <div>
+            <h1 style="margin:0">Welcome back, IITian</h1>
+            <p style="color: var(--text-dim); margin: 5px 0;">Track your JEE Main & Advanced targets</p>
         </div>
     </div>
 
-    <div class="card" style="margin-bottom: 20px;">
-        <h2>🎯 Upcoming Exam Goals</h2>
-        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <input type="text" id="exName" placeholder="Exam Name (e.g., NEET 2026)">
-            <input type="date" id="exDate">
-            <button class="btn" style="width: 120px;" onclick="addExam()">Add</button>
+    <div class="section-header">
+        <span>Upcoming Exams</span>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="exName" placeholder="Exam" style="width:150px; margin:0">
+            <input type="date" id="exDate" style="width:150px; margin:0">
+            <button class="btn-glow" onclick="addExam()" style="width:80px;">Add</button>
         </div>
-        <div id="examGrid" class="exam-container"></div>
     </div>
+    <div id="examGrid" class="exam-grid"></div>
 
-    <div class="dashboard-grid">
-        <div class="card">
-            <h2>📊 Syllabus Distribution</h2>
-            <div style="display: flex; align-items: center; gap: 20px;">
+    <div class="main-stats">
+        <div class="glass-card">
+            <h2>📊 Syllabus Coverage</h2>
+            <div style="display: flex; align-items: center; gap: 30px;">
+                <div style="width: 200px;">
+                    <canvas id="jeeChart"></canvas>
+                </div>
                 <div style="flex: 1;">
                     <select id="subSelect">
-                        <option value="Biology">Biology</option>
                         <option value="Physics">Physics</option>
                         <option value="Chemistry">Chemistry</option>
+                        <option value="Math">Mathematics</option>
                     </select>
-                    <input type="number" id="hrsInput" placeholder="Add Hours">
-                    <button class="btn" onclick="logStudy()">Log Hours</button>
-                </div>
-                <div id="chartArea">
-                    <canvas id="doughnutChart"></canvas>
+                    <input type="number" id="hrsIn" placeholder="Enter Hours">
+                    <button class="btn-glow" onclick="logData()">Log Study Session</button>
                 </div>
             </div>
         </div>
 
-        <div class="card">
-            <h2>📅 7-Day Slot Tracker (Hrs)</h2>
-            <div class="weekly-grid" id="weekContainer"></div>
-            <button class="btn" style="margin-top: 15px;" onclick="saveWeekly()">Save Weekly Plan</button>
+        <div class="glass-card">
+            <h2>📔 Quick Revision Notes</h2>
+            <textarea id="jeeNotes" style="width:100%; height:150px; background:transparent; color:white; border:1px solid #334155; border-radius:10px; padding:10px;" oninput="saveNotes()" placeholder="Important formulas..."></textarea>
         </div>
     </div>
 
-    <div class="card" style="margin-top: 20px;">
-        <h2>📝 Revision Tags & Quick Notes</h2>
-        <textarea id="notes" style="width: 100%; height: 100px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: white; padding: 15px; outline: none;" placeholder="Enter key mnemonics or formulas..." oninput="localStorage.setItem('neet_notes', this.value)"></textarea>
-    </div>
+    <div class="section-header">Weekly Strategy Plan</div>
+    <div class="weekly-scroll" id="weekGrid"></div>
+
 </div>
 
 <script>
-    let exams = JSON.parse(localStorage.getItem('neet_exams')) || [];
-    let studyData = JSON.parse(localStorage.getItem('neet_data')) || { Biology: 0, Physics: 0, Chemistry: 0 };
-    let weeklySlots = JSON.parse(localStorage.getItem('neet_weekly')) || [0,0,0,0,0,0,0];
+    let exams = JSON.parse(localStorage.getItem('jee_exams')) || [];
+    let studyData = JSON.parse(localStorage.getItem('jee_pcm_data')) || { Physics: 0, Chemistry: 0, Math: 0 };
     let chart;
 
-    // --- Profile Photo Logic ---
-    function loadPhoto(event) {
+    // --- Profile Pic ---
+    function uploadPFP(e) {
         const reader = new FileReader();
-        reader.onload = function() {
-            const dataURL = reader.result;
-            document.getElementById('userPhoto').src = dataURL;
-            localStorage.setItem('user_photo', dataURL);
+        reader.onload = () => {
+            document.getElementById('pfp').src = reader.result;
+            localStorage.setItem('jee_pfp', reader.result);
         };
-        reader.readAsDataURL(event.target.files[0]);
+        reader.readAsDataURL(e.target.files[0]);
     }
 
-    // --- Exam Logic ---
+    // --- Exams Logic ---
     function addExam() {
         const name = document.getElementById('exName').value;
         const date = document.getElementById('exDate').value;
         if(name && date) {
-            exams.push({ name, date });
-            localStorage.setItem('neet_exams', JSON.stringify(exams));
+            exams.push({name, date});
+            localStorage.setItem('jee_exams', JSON.stringify(exams));
             renderExams();
         }
     }
@@ -126,78 +180,76 @@
         const grid = document.getElementById('examGrid');
         grid.innerHTML = '';
         exams.forEach((ex, i) => {
-            const diff = new Date(ex.date) - new Date();
-            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            const days = Math.ceil((new Date(ex.date) - new Date()) / (1000 * 60 * 60 * 24));
             grid.innerHTML += `
                 <div class="exam-card">
-                    <span class="delete-btn" onclick="removeExam(${i})">✕</span>
-                    <span style="font-size: 0.7rem; color: #94a3b8;">${ex.name}</span>
-                    <span class="days-left">${days > 0 ? days : 0}</span>
-                    <span style="font-size: 0.6rem;">DAYS LEFT</span>
+                    <span class="delete-exam" onclick="removeExam(${i})">✕</span>
+                    <span style="color:var(--text-dim); font-size:0.8rem">${ex.name}</span>
+                    <span class="days">${days > 0 ? days : 0}</span>
+                    <span style="font-size:0.7rem; color:var(--accent)">DAYS LEFT</span>
                 </div>`;
         });
     }
 
     function removeExam(i) {
         exams.splice(i, 1);
-        localStorage.setItem('neet_exams', JSON.stringify(exams));
+        localStorage.setItem('jee_exams', JSON.stringify(exams));
         renderExams();
     }
 
+    // --- Weekly Grid Logic (7 Columns) ---
+    function renderWeek() {
+        const weekGrid = document.getElementById('weekGrid');
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        weekGrid.innerHTML = days.map(d => `
+            <div class="day-card">
+                <div class="day-title">${d}</div>
+                <div class="tag-item">Physics Chp 3 ✅</div>
+                <div class="tag-item">Math Mock Test</div>
+                <div class="tag-item">Inorganic Rev</div>
+            </div>
+        `).join('');
+    }
+
     // --- Chart Logic ---
-    function logStudy() {
+    function logData() {
         const sub = document.getElementById('subSelect').value;
-        const hr = parseFloat(document.getElementById('hrsInput').value);
+        const hr = parseFloat(document.getElementById('hrsIn').value);
         if(sub && hr) {
             studyData[sub] += hr;
-            localStorage.setItem('neet_data', JSON.stringify(studyData));
+            localStorage.setItem('jee_pcm_data', JSON.stringify(studyData));
             updateChart();
         }
     }
 
     function updateChart() {
-        const ctx = document.getElementById('doughnutChart').getContext('2d');
-        if (chart) chart.destroy();
+        const ctx = document.getElementById('jeeChart').getContext('2d');
+        if(chart) chart.destroy();
         chart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: Object.keys(studyData),
+                labels: ['Physics', 'Chemistry', 'Math'],
                 datasets: [{
-                    data: Object.values(studyData),
-                    backgroundColor: ['#22c55e', '#8b5cf6', '#f59e0b'],
+                    data: [studyData.Physics, studyData.Chemistry, studyData.Math],
+                    backgroundColor: ['#3b82f6', '#10b981', '#f43f5e'],
                     borderWidth: 0,
-                    hoverOffset: 10
+                    cutout: '80%'
                 }]
             },
-            options: { plugins: { legend: { display: false } }, cutout: '70%' }
+            options: { plugins: { legend: { display: false } } }
         });
     }
 
-    // --- Weekly Logic ---
-    function renderWeekly() {
-        const container = document.getElementById('weekContainer');
-        const days = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
-        container.innerHTML = days.map((d, i) => `
-            <div class="day-col">
-                <div class="day-label">${d}</div>
-                <input type="number" class="slot-input" value="${weeklySlots[i]}" data-idx="${i}">
-            </div>
-        `).join('');
-    }
-
-    function saveWeekly() {
-        const inputs = document.querySelectorAll('.slot-input');
-        inputs.forEach((inp, i) => weeklySlots[i] = inp.value);
-        localStorage.setItem('neet_weekly', JSON.stringify(weeklySlots));
-        alert("Weekly Plan Synced!");
+    function saveNotes() {
+        localStorage.setItem('jee_notes', document.getElementById('jeeNotes').value);
     }
 
     window.onload = () => {
-        if(localStorage.getItem('user_photo')) document.getElementById('userPhoto').src = localStorage.getItem('user_photo');
-        document.getElementById('notes').value = localStorage.getItem('neet_notes') || "";
+        if(localStorage.getItem('jee_pfp')) document.getElementById('pfp').src = localStorage.getItem('jee_pfp');
+        document.getElementById('jeeNotes').value = localStorage.getItem('jee_notes') || "";
         renderExams();
+        renderWeek();
         updateChart();
-        renderWeekly();
     };
 </script>
 
