@@ -3,231 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JEE Master Dashboard</title>
+    <title>ROCKEY's Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg: #0b0f1a; --card: #161b2b; --accent: #00d2ff;
+            --bg: #05070a; --panel: #0d1117; --accent: #00f2ff;
             --phy: #3b82f6; --chem: #10b981; --math: #f43f5e;
-            --text: #ffffff; --dim: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.03);
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 25px; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; overflow-x: hidden; }
+        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 300px 1fr 300px; gap: 20px; }
         
-        /* Profile & Layout */
-        .flex-row { display: flex; gap: 20px; align-items: start; margin-bottom: 30px; }
-        .pfp { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--accent); cursor: pointer; object-fit: cover; }
+        /* Theme Overhaul */
+        .panel { background: var(--panel); border: 1px solid #21262d; border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+
+        /* Left Sidebar: Profile & Timer */
+        .profile-card { text-align: center; margin-bottom: 20px; }
+        .pfp { width: 120px; height: 120px; border-radius: 50%; border: 2px solid var(--accent); padding: 5px; cursor: pointer; }
         
-        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        .card { background: var(--card); padding: 20px; border-radius: 18px; border: 1px solid #2d3748; }
+        .stopwatch { font-family: 'Courier New', monospace; font-size: 2.5rem; text-align: center; color: var(--accent); text-shadow: 0 0 10px var(--accent); margin: 10px 0; }
+        
+        /* Middle: Graphs & Planning */
+        .center-grid { display: flex; flex-direction: column; gap: 20px; }
+        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-        /* Exam Grid */
-        .exam-grid { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 30px; }
-        .exam-card { min-width: 180px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid var(--accent); position: relative; }
-        .days-num { font-size: 2rem; font-weight: 800; color: var(--accent); display: block; }
+        /* Weekly Columns (Tag System) */
+        .week-scroll { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        .day-box { background: var(--glass); border: 1px solid #30363d; border-radius: 12px; padding: 10px; min-height: 180px; }
+        .tag { background: rgba(0, 242, 255, 0.1); color: var(--accent); padding: 4px 8px; border-radius: 5px; font-size: 11px; margin-bottom: 5px; display: block; border: 1px solid var(--accent); }
 
-        /* Weekly Columns (Editable) */
-        .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-top: 20px; }
-        .day-col { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 10px; min-height: 250px; border: 1px solid #2d3748; }
-        .day-name { font-size: 0.75rem; color: var(--dim); text-align: center; margin-bottom: 10px; display: block; border-bottom: 1px solid #2d3748; }
-        .tag-input { width: 100%; background: transparent; border: none; color: #fff; font-size: 0.7rem; margin-top: 5px; outline: none; }
-        .tag-pill { background: #1e293b; color: var(--accent); padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; margin-bottom: 5px; cursor: pointer; display: flex; justify-content: space-between; }
+        /* Right Sidebar: Exams & Logs */
+        .exam-item { background: #161b22; padding: 12px; border-radius: 12px; margin-bottom: 10px; border-left: 3px solid var(--math); }
+        .log-entry { font-size: 12px; padding: 8px 0; border-bottom: 1px solid #30363d; }
 
-        /* Inputs & Buttons */
-        input, select, textarea { background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
-        .btn { background: linear-gradient(90deg, #00d2ff, #3a7bd5); border: none; color: white; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
-
-        #trendChart { height: 200px !important; }
+        /* Input Styles */
+        input, select, button { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: white; margin-bottom: 10px; }
+        button { background: var(--accent); color: #000; font-weight: bold; border: none; cursor: pointer; transition: 0.2s; }
+        button:hover { filter: brightness(1.2); transform: scale(1.02); }
+        .btn-stop { background: #f43f5e; color: white; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="flex-row">
-        <img id="pfpImg" src="https://via.placeholder.com/90" class="pfp" onclick="document.getElementById('pfpIn').click()">
-        <input type="file" id="pfpIn" hidden onchange="savePFP(event)">
-        <div>
-            <h1 style="margin:0">JEE Command Center</h1>
-            <p id="quote" style="color:var(--dim); margin:5px 0;">Welcome back, [IIT Aspirant]</p>
+    
+    <div class="center-grid">
+        <div class="panel profile-card">
+            <img id="userPfp" src="https://via.placeholder.com/120" class="pfp" onclick="document.getElementById('pfpInput').click()">
+            <input type="file" id="pfpInput" hidden onchange="loadImg(event)">
+            <h3>IIT Aspirant</h3>
+            <div class="stopwatch" id="swDisplay">00:00:00</div>
+            <div style="display: flex; gap: 5px;">
+                <button onclick="startSW()">Start</button>
+                <button class="btn-stop" onclick="stopSW()">Stop</button>
+                <button onclick="resetSW()" style="background:#30363d; color:white;">Reset</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>📈 Mock Score Trend</h2>
+            <canvas id="scoreChart" height="150"></canvas>
+            <input type="number" id="mockScore" placeholder="Enter Score (out of 300)">
+            <button onclick="addScore()">Update Graph</button>
         </div>
     </div>
 
-    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-        <input type="text" id="exName" placeholder="Exam Name" style="width: 200px;">
-        <input type="date" id="exDate" style="width: 200px;">
-        <button class="btn" onclick="addExam()" style="width: 80px;">Add</button>
-    </div>
-    <div class="exam-grid" id="examGrid"></div>
-
-    <div class="grid">
-        <div class="card">
-            <div style="display:flex; justify-content: space-between;">
-                <h2>📈 Performance Trend</h2>
-                <div style="width: 200px;"><canvas id="doughnutChart"></canvas></div>
+    <div class="center-grid">
+        <div class="panel chart-row">
+            <div>
+                <h2>📊 Syllabus PCM</h2>
+                <canvas id="pcmChart"></canvas>
             </div>
-            <canvas id="trendChart"></canvas>
-            
-            <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+            <div>
+                <h2>🕒 Recent Study sessions</h2>
+                <canvas id="sessionChart"></canvas>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>📅 Weekly Planner (Tags)</h2>
+            <div class="week-scroll" id="weekContainer"></div>
+        </div>
+
+        <div class="panel">
+            <div style="display: flex; gap: 10px;">
                 <select id="subSelect"><option>Physics</option><option>Chemistry</option><option>Math</option></select>
-                <input type="number" id="hrsIn" placeholder="Hours studied">
-                <button class="btn" onclick="logStudy()">Log Session</button>
+                <input type="number" id="hrInput" placeholder="Hours">
+                <button onclick="logSession()">Log Work</button>
             </div>
         </div>
+    </div>
 
-        <div class="card">
-            <h2>📝 Quick Log History</h2>
-            <div id="logHistory" style="font-size: 0.8rem; max-height: 350px; overflow-y: auto;"></div>
+    <div class="center-grid">
+        <div class="panel">
+            <h2>⏳ Exam Countdown</h2>
+            <input type="text" id="exName" placeholder="Exam Name">
+            <input type="date" id="exDate">
+            <button onclick="addExam()">Add Deadline</button>
+            <div id="examList"></div>
+        </div>
+
+        <div class="panel">
+            <h2>📝 Activity Log</h2>
+            <div id="logList" style="max-height: 300px; overflow-y: auto;"></div>
         </div>
     </div>
 
-    <div class="card" style="margin-top: 20px;">
-        <div style="display:flex; justify-content: space-between; align-items: center;">
-            <h2>📅 Weekly Planner (Add Tags)</h2>
-            <span style="font-size: 0.7rem; color: var(--dim);">Type task and press Enter</span>
-        </div>
-        <div class="week-grid" id="weekGrid"></div>
-    </div>
 </div>
 
 <script>
-    let studyData = JSON.parse(localStorage.getItem('j_data')) || { Physics: 0, Chemistry: 0, Math: 0 };
-    let exams = JSON.parse(localStorage.getItem('j_exams')) || [];
-    let logs = JSON.parse(localStorage.getItem('j_logs')) || [];
-    let weekTasks = JSON.parse(localStorage.getItem('j_week')) || [[],[],[],[],[],[],[]];
+    // Data Storage
+    let studyData = JSON.parse(localStorage.getItem('q_data')) || { Physics: 0, Chemistry: 0, Math: 0 };
+    let exams = JSON.parse(localStorage.getItem('q_exams')) || [];
+    let logs = JSON.parse(localStorage.getItem('q_logs')) || [];
+    let scores = JSON.parse(localStorage.getItem('q_scores')) || [120, 150, 140, 180, 210];
+    let weekTags = JSON.parse(localStorage.getItem('q_week')) || Array(7).fill().map(() => []);
 
-    let trendChart, doughnutChart;
+    let pcmChart, sessionChart, scoreChart;
 
-    // --- Core Log Logic ---
-    function logStudy() {
-        const sub = document.getElementById('subSelect').value;
-        const hr = parseFloat(document.getElementById('hrsIn').value);
-        if(!hr) return;
-
-        studyData[sub] += hr;
-        const newLog = { sub, hr, date: new Date().toLocaleDateString() };
-        logs.push(newLog);
-
-        localStorage.setItem('j_data', JSON.stringify(studyData));
-        localStorage.setItem('j_logs', JSON.stringify(logs));
-        
-        updateUI();
+    // --- Stopwatch Logic ---
+    let swInterval, swStart;
+    function startSW() { swStart = Date.now() - (window.swElapsed || 0); swInterval = setInterval(updateSW, 100); }
+    function stopSW() { clearInterval(swInterval); }
+    function resetSW() { stopSW(); window.swElapsed = 0; document.getElementById('swDisplay').innerText = "00:00:00"; }
+    function updateSW() {
+        window.swElapsed = Date.now() - swStart;
+        let s = Math.floor(window.swElapsed / 1000);
+        let m = Math.floor(s / 60);
+        let h = Math.floor(m / 60);
+        document.getElementById('swDisplay').innerText = 
+            `${String(h).padStart(2,'0')}:${String(m%60).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
     }
 
-    // --- Weekly Tag System ---
-    function renderWeek() {
-        const days = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
-        const grid = document.getElementById('weekGrid');
-        grid.innerHTML = days.map((d, i) => `
-            <div class="day-col">
-                <span class="day-name">${d}</span>
-                <div id="tags-${i}">${weekTasks[i].map((t, ti) => `
-                    <div class="tag-pill" onclick="removeTag(${i}, ${ti})">${t} <span>×</span></div>
-                `).join('')}</div>
-                <input type="text" class="tag-input" placeholder="+ Add Task" onkeydown="addTag(event, ${i})">
-            </div>
-        `).join('');
-    }
-
-    function addTag(e, dayIdx) {
-        if(e.key === 'Enter' && e.target.value.trim() !== '') {
-            weekTasks[dayIdx].push(e.target.value);
-            localStorage.setItem('j_week', JSON.stringify(weekTasks));
-            e.target.value = '';
-            renderWeek();
-        }
-    }
-
-    function removeTag(dayIdx, tagIdx) {
-        weekTasks[dayIdx].splice(tagIdx, 1);
-        localStorage.setItem('j_week', JSON.stringify(weekTasks));
-        renderWeek();
-    }
-
-    // --- Charts ---
+    // --- Charts Logic ---
     function initCharts() {
-        const trendCtx = document.getElementById('trendChart').getContext('2d');
-        trendChart = new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: logs.slice(-7).map(l => l.date),
-                datasets: [{
-                    label: 'Study Hours',
-                    data: logs.slice(-7).map(l => l.hr),
-                    borderColor: '#00d2ff',
-                    backgroundColor: 'rgba(0, 210, 255, 0.1)',
-                    fill: true, tension: 0.4
-                }]
-            },
-            options: { scales: { y: { beginAtZero: true, grid: { color: '#2d3748' } } } }
-        });
-
-        const doughCtx = document.getElementById('doughnutChart').getContext('2d');
-        doughnutChart = new Chart(doughCtx, {
+        pcmChart = new Chart(document.getElementById('pcmChart'), {
             type: 'doughnut',
-            data: {
-                labels: ['Phy', 'Chem', 'Math'],
-                datasets: [{
-                    data: [studyData.Physics, studyData.Chemistry, studyData.Math],
-                    backgroundColor: ['#3b82f6', '#10b981', '#f43f5e'],
-                    borderWidth: 0
-                }]
-            },
-            options: { plugins: { legend: { display: false } }, cutout: '80%' }
+            data: { labels: ['Phy','Chem','Math'], datasets: [{ data: Object.values(studyData), backgroundColor: ['#3b82f6','#10b981','#f43f5e'], borderWidth: 0 }] },
+            options: { cutout: '80%', plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
+        });
+
+        sessionChart = new Chart(document.getElementById('sessionChart'), {
+            type: 'line',
+            data: { labels: logs.slice(-5).map(l => l.date), datasets: [{ label: 'Hrs', data: logs.slice(-5).map(l => l.hr), borderColor: varColor('--accent'), tension: 0.4 }] },
+            options: { scales: { y: { display: false } } }
+        });
+
+        scoreChart = new Chart(document.getElementById('scoreChart'), {
+            type: 'line',
+            data: { labels: scores.map((_,i) => `Test ${i+1}`), datasets: [{ label: 'Score', data: scores, borderColor: varColor('--math'), fill: true, backgroundColor: 'rgba(244, 63, 94, 0.1)' }] },
+            options: { plugins: { legend: { display: false } } }
         });
     }
 
-    function updateUI() {
-        renderExams();
-        renderWeek();
-        if(trendChart) {
-            trendChart.data.labels = logs.slice(-7).map(l => l.date);
-            trendChart.data.datasets[0].data = logs.slice(-7).map(l => l.hr);
-            trendChart.update();
-        }
-        if(doughnutChart) {
-            doughnutChart.data.datasets[0].data = [studyData.Physics, studyData.Chemistry, studyData.Math];
-            doughnutChart.update();
-        }
-        
-        document.getElementById('logHistory').innerHTML = logs.slice().reverse().map(l => `
-            <div style="border-bottom:1px solid #2d3748; padding:5px 0;">
-                <span style="color:var(--accent)">${l.sub}</span>: ${l.hr}hrs <span style="float:right; color:var(--dim)">${l.date}</span>
-            </div>
-        `).join('');
+    function varColor(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+    // --- Core Functions ---
+    function logSession() {
+        let sub = document.getElementById('subSelect').value;
+        let hr = parseFloat(document.getElementById('hrInput').value);
+        if(!hr) return;
+        studyData[sub] += hr;
+        logs.push({ sub, hr, date: new Date().toLocaleDateString() });
+        saveAll();
+        location.reload(); 
     }
 
-    // --- Photo & Exams (Standard) ---
-    function savePFP(e) {
-        const reader = new FileReader();
-        reader.onload = () => { document.getElementById('pfpImg').src = reader.result; localStorage.setItem('j_pfp', reader.result); };
-        reader.readAsDataURL(e.target.files[0]);
+    function addScore() {
+        let s = parseInt(document.getElementById('mockScore').value);
+        if(s) { scores.push(s); saveAll(); location.reload(); }
     }
 
     function addExam() {
-        const name = document.getElementById('exName').value;
-        const date = document.getElementById('exDate').value;
-        if(name && date) { exams.push({name, date}); localStorage.setItem('j_exams', JSON.stringify(exams)); renderExams(); }
+        let name = document.getElementById('exName').value;
+        let date = document.getElementById('exDate').value;
+        if(name && date) { exams.push({name, date}); saveAll(); renderExams(); }
     }
 
     function renderExams() {
-        const grid = document.getElementById('examGrid');
-        grid.innerHTML = exams.map((ex, i) => {
-            const days = Math.ceil((new Date(ex.date) - new Date()) / (1000 * 60 * 60 * 24));
-            return `<div class="exam-card">
-                <span style="font-size:0.7rem; color:var(--dim)">${ex.name}</span>
-                <span class="days-num">${days > 0 ? days : 0}</span>
-                <span style="font-size:0.6rem">Days Remaining</span>
-                <span onclick="removeExam(${i})" style="position:absolute; top:5px; right:5px; cursor:pointer; color:red">×</span>
-            </div>`;
+        document.getElementById('examList').innerHTML = exams.map((ex, i) => {
+            let d = Math.ceil((new Date(ex.date) - new Date()) / 86400000);
+            return `<div class="exam-item"><strong>${d} Days</strong><br><small>${ex.name}</small></div>`;
         }).join('');
     }
 
-    function removeExam(i) { exams.splice(i, 1); localStorage.setItem('j_exams', JSON.stringify(exams)); renderExams(); }
+    function renderWeek() {
+        let days = ['M','T','W','T','F','S','S'];
+        document.getElementById('weekContainer').innerHTML = days.map((d, i) => `
+            <div class="day-box">
+                <div style="font-size:10px; color:var(--accent); text-align:center">${d}</div>
+                <div id="tags-${i}">${weekTags[i].map(t => `<span class="tag">${t}</span>`).join('')}</div>
+                <input type="text" placeholder="+" onkeydown="if(event.key==='Enter'){weekTags[${i}].push(this.value); saveAll(); location.reload();}" style="font-size:10px; padding:2px;">
+            </div>
+        `).join('');
+    }
+
+    function saveAll() {
+        localStorage.setItem('q_data', JSON.stringify(studyData));
+        localStorage.setItem('q_exams', JSON.stringify(exams));
+        localStorage.setItem('q_logs', JSON.stringify(logs));
+        localStorage.setItem('q_scores', JSON.stringify(scores));
+        localStorage.setItem('q_week', JSON.stringify(weekTags));
+    }
+
+    function loadImg(e) {
+        let reader = new FileReader();
+        reader.onload = () => { document.getElementById('userPfp').src = reader.result; localStorage.setItem('q_pfp', reader.result); };
+        reader.readAsDataURL(e.target.files[0]);
+    }
 
     window.onload = () => {
-        if(localStorage.getItem('j_pfp')) document.getElementById('pfpImg').src = localStorage.getItem('j_pfp');
+        if(localStorage.getItem('q_pfp')) document.getElementById('userPfp').src = localStorage.getItem('q_pfp');
         initCharts();
-        updateUI();
+        renderExams();
+        renderWeek();
+        document.getElementById('logList').innerHTML = logs.slice().reverse().map(l => `<div class="log-entry"><b>${l.sub}</b>: ${l.hr}h <span style="float:right">${l.date}</span></div>`).join('');
     };
 </script>
 </body>
