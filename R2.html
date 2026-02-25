@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Study Command Center</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.6);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+            --primary: #6366f1;
+            --accent: #ec4899;
+            --success: #10b981;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 40%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        /* Header */
+        header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: var(--glass-border);
+            margin-bottom: 10px;
+        }
+
+        h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.5px; }
+        h1 span { color: var(--primary); }
+        
+        .live-clock { font-family: monospace; font-size: 1.2rem; color: var(--accent); }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: var(--glass-border);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Countdown Specifics */
+        .countdown-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+        .time-unit {
+            background: rgba(0,0,0,0.2);
+            padding: 10px 5px;
+            border-radius: 12px;
+        }
+        .time-val { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .time-label { font-size: 0.7rem; color: var(--text-muted); margin-top: 5px; }
+
+        /* Notes Specifics */
+        textarea {
+            width: 100%;
+            height: 180px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 15px;
+            color: var(--text);
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            transition: 0.3s;
+        }
+        textarea:focus { border-color: var(--primary); background: rgba(0,0,0,0.3); }
+        
+        .btn-save {
+            margin-top: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            align-self: flex-end;
+            transition: opacity 0.3s;
+        }
+        .btn-save:hover { opacity: 0.9; }
+
+        /* Tracker Specifics */
+        .stat-item { margin-bottom: 15px; }
+        .stat-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; }
+        .progress-bg {
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-row { display: flex; gap: 10px; margin-top: 20px; }
+        input[type="number"] {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 8px;
+            color: white;
+            width: 70%;
+        }
+        .btn-add {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-add:hover { background: rgba(255,255,255,0.2); }
+
+        /* Image Widget */
+        .img-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .img-placeholder {
+            aspect-ratio: 1;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            border: 1px dashed rgba(255,255,255,0.2);
+        }
+        .img-placeholder:hover { border-color: var(--primary); color: var(--primary); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container { grid-template-columns: 1fr; }
+            header { flex-direction: column; gap: 10px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-rocket"></i> JEE/College <span>Dashboard</span></h1>
+            <div class="live-clock" id="clock">00:00:00</div>
+        </header>
+
+        <!-- 1. Countdown Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="far fa-hourglass-half"></i> Exam Countdown</span>
+                <i class="fas fa-pencil-alt" style="color: var(--text-muted); cursor: pointer;" onclick="resetTimer()"></i>
+            </div>
+            <div class="countdown-grid">
+                <div class="time-unit">
+                    <div class="time-val" id="days">00</div>
+                    <div class="time-label">Days</div>
+                </div>
+                <div class="time-unit">
+                    <div class="time-val" id="hours">00</div>
+                    <div class="time-label">Hours</div>
+                </div>
+                <div class="time-unit">
+                    <div class="time-val" id="minutes">00</div>
+                    <div class="time-label">Mins</div>
+                </div>
+                <div class="time-unit">
+                    <div class="time-val" id="seconds">00</div>
+                    <div class="time-label">Secs</div>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
+                Target: <span id="target-date-display">Loading...</span>
+            </p>
+        </div>
+
+        <!-- 2. Personal Notes Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="fas fa-book"></i> Quick Notes</span>
+                <button class="btn-save" onclick="saveNotes()">Save</button>
+            </div>
+            <textarea id="myNotes" placeholder="Write your daily targets, formulas, or doubts here..."></textarea>
+            <p id="save-msg" style="font-size: 0.8rem; color: var(--success); opacity: 0; transition: opacity 0.5s; margin-top: 5px; text-align: right;">Saved!</p>
+        </div>
+
+        <!-- 3. Study Tracker Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="fas fa-chart-pie"></i> Daily Analytics</span>
+            </div>
+            
+            <!-- Physics -->
+            <div class="stat-item">
+                <div class="stat-header">
+                    <span>Physics</span>
+                    <span id="phy-text">0 / 4 hrs</span>
+                </div>
+                <div class="progress-bg">
+                    <div class="progress-fill" id="phy-bar"></div>
+                </div>
+            </div>
+
+            <!-- Chemistry -->
+            <div class="stat-item">
+                <div class="stat-header">
+                    <span>Chemistry</span>
+                    <span id="chem-text">0 / 4 hrs</span>
+                </div>
+                <div class="progress-bg">
+                    <div class="progress-fill" id="chem-bar"></div>
+                </div>
+            </div>
+
+            <!-- Math -->
+            <div class="stat-item">
+                <div class="stat-header">
+                    <span>Maths</span>
+                    <span id="math-text">0 / 4 hrs</span>
+                </div>
+                <div class="progress-bg">
+                    <div class="progress-fill" id="math-bar"></div>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <select id="subjectSelect" style="background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px;">
+                    <option value="phy">Physics</option>
+                    <option value="chem">Chemistry</option>
+                    <option value="math">Maths</option>
+                </select>
+                <input type="number" id="hoursInput" placeholder="Hrs" min="1" max="10">
+                <button class="btn-add" onclick="addHours()">Add</button>
+            </div>
+            <button onclick="resetStats()" style="margin-top: 10px; background: transparent; border: none; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; text-decoration: underline;">Reset Stats</button>
+        </div>
+
+        <!-- 4. Motivation/Images Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title"><i class="fas fa-image"></i> Vision Board</span>
+                <button class="btn-add" onclick="addImage()">+</button>
+            </div>
+            <div class="img-grid" id="imageGallery">
+                <!-- Images will appear here -->
+                <div class="img-placeholder" onclick="alert('Click to paste image URL')">+</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. CLOCK & COUNTDOWN LOGIC ---
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Set Exam Date (Default: Jan 25, 2026 - Change this string to your actual date)
+        let examDate = new Date("January 25, 2026 00:00:00").getTime();
+        
+        // Check
