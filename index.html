@@ -3,252 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbit JEE | Professional Dashboard</title>
+    <title>Orbit | JEE Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --brand: #6366f1; --brand-glow: rgba(99, 102, 241, 0.2);
-            --surface: #0f172a; --panel: #1e293b; --border: #334155;
-            --text-main: #f8fafc; --text-muted: #94a3b8;
-            --phy: #818cf8; --chem: #34d399; --math: #fb7185;
+            --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0;
+            --text-main: #0f172a; --text-sub: #64748b;
+            --brand: #4f46e5; --brand-soft: #eef2ff;
+            --phy: #6366f1; --chem: #10b981; --math: #f43f5e;
         }
 
-        body {
-            font-family: 'Inter', sans-serif; background: var(--surface); color: var(--text-main);
-            margin: 0; display: flex; height: 100vh; overflow: hidden;
-        }
-
-        /* Sidebar Navigation */
-        aside {
-            width: 280px; background: #0b1120; border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; padding: 24px;
-        }
-
-        .profile-container { text-align: center; padding-bottom: 30px; border-bottom: 1px solid var(--border); }
-        .pfp-wrapper {
-            width: 80px; height: 80px; margin: 0 auto 15px; border-radius: 24px;
-            background: var(--panel); border: 2px solid var(--brand); overflow: hidden; cursor: pointer;
-        }
-        .pfp-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* Dashboard Grid Layout */
-        main { flex: 1; padding: 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; }
-        .bento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; display: flex; height: 100vh; }
         
-        .bento-card {
-            background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
-            padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
+        /* Layout */
+        aside { width: 260px; background: white; border-right: 1px solid var(--border); padding: 32px 24px; display: flex; flex-direction: column; gap: 40px; }
+        main { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; }
 
-        /* Widgets Styling */
-        .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .stat-header h2 { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin: 0; }
+        .bento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 
-        .stopwatch-display { font-size: 2.5rem; font-weight: 700; color: var(--brand); letter-spacing: -1px; margin: 15px 0; }
+        /* Typography */
+        h1 { font-size: 1.25rem; font-weight: 700; margin: 0; }
+        h2 { font-size: 0.85rem; font-weight: 600; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px 0; }
+
+        /* Widgets */
+        .timer-box { text-align: center; }
+        #timerDisplay { font-size: 2.2rem; font-weight: 700; margin: 10px 0; font-variant-numeric: tabular-nums; color: var(--brand); }
         
-        /* 7-Day Planning Columns */
-        .planner-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; }
-        .day-col { background: rgba(15, 23, 42, 0.5); border: 1px solid var(--border); border-radius: 12px; padding: 12px; min-height: 150px; }
-        .day-label { font-size: 11px; font-weight: 700; color: var(--brand); text-transform: uppercase; margin-bottom: 10px; display: block; }
+        .btn { border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
+        .btn-primary { background: var(--brand); color: white; width: 100%; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); width: 100%; color: var(--text-sub); }
+
+        /* Inputs */
+        input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; }
         
-        .tag {
-            background: var(--border); font-size: 10px; padding: 4px 8px; border-radius: 6px;
-            display: inline-block; margin: 2px; border: 1px solid transparent; transition: 0.2s;
-        }
-        .tag:hover { border-color: var(--brand); color: var(--brand); }
+        /* Planner */
+        .planner-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        .day-col { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 10px; min-height: 120px; }
+        .day-name { font-size: 0.7rem; color: var(--text-sub); font-weight: 700; display: block; margin-bottom: 8px; }
+        .tag { background: var(--brand-soft); color: var(--brand); font-size: 0.65rem; padding: 4px 8px; border-radius: 4px; display: block; margin-bottom: 4px; }
 
-        /* Commercial Inputs */
-        input, select {
-            background: #0f172a; border: 1px solid var(--border); color: white;
-            padding: 10px 14px; border-radius: 10px; font-size: 0.9rem; margin-bottom: 12px; width: 100%;
-        }
-        .btn-primary {
-            background: var(--brand); color: white; border: none; padding: 12px;
-            border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.2s;
-        }
-        .btn-primary:hover { background: #4f46e5; box-shadow: 0 0 15px var(--brand-glow); }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        .pfp { width: 48px; height: 48px; border-radius: 12px; background: var(--brand-soft); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--brand); }
     </style>
 </head>
 <body>
 
     <aside>
-        <div class="profile-container">
-            <div class="pfp-wrapper" onclick="document.getElementById('fileIn').click()">
-                <img id="pfp" src="https://ui-avatars.com/api/?name=JEE+Pro&background=6366f1&color=fff">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="pfp">JP</div>
+            <div>
+                <h1>Orbit Pro</h1>
+                <span style="font-size: 0.75rem; color: var(--text-sub);">JEE 2026 Aspirant</span>
             </div>
-            <input type="file" id="fileIn" hidden onchange="uploadPhoto(event)">
-            <div style="font-weight: 700; font-size: 1.1rem;">Elite Aspirant</div>
-            <div style="color: var(--text-muted); font-size: 0.8rem;">Target: IIT Bombay 2026</div>
         </div>
 
-        <div style="margin-top: 30px;">
-            <div class="stat-header"><h2>TIMER</h2></div>
-            <div class="stopwatch-display" id="swTime">00:00:00</div>
+        <div class="timer-box">
+            <h2>Deep Work Timer</h2>
+            <div id="timerDisplay">00:00:00</div>
             <div style="display: flex; gap: 8px;">
-                <button class="btn-primary" onclick="startTimer()" style="flex:2">Focus</button>
-                <button class="btn-primary" onclick="stopTimer()" style="background:#ef4444; flex:1">■</button>
+                <button class="btn btn-primary" onclick="toggleTimer()" id="timerBtn">Start</button>
+                <button class="btn btn-outline" onclick="resetTimer()">Reset</button>
             </div>
         </div>
 
-        <div style="margin-top: auto;">
-            <h2>ADD DEADLINE</h2>
-            <input type="text" id="exName" placeholder="Exam Name">
-            <input type="date" id="exDate">
-            <button class="btn-primary" onclick="addExam()">Pin Deadline</button>
+        <div>
+            <h2>Upcoming Exam</h2>
+            <div id="countdownBox" style="font-size: 1.1rem; font-weight: 700; color: var(--math);">-- Days Left</div>
+            <input type="date" id="examDate" style="margin-top:10px" onchange="updateCountdown()">
         </div>
     </aside>
 
     <main>
         <div class="bento-grid">
-            <div class="bento-card">
-                <div class="stat-header"><h2>PCM DISTRIBUTION</h2></div>
-                <div style="height: 180px;"><canvas id="doughnutChart"></canvas></div>
-                <div style="margin-top: 20px;">
-                    <select id="subSelect"><option>Physics</option><option>Chemistry</option><option>Math</option></select>
-                    <input type="number" id="hrsIn" placeholder="Session Hours">
-                    <button class="btn-primary" onclick="logStudy()">Add to Syllabus</button>
+            <div class="card">
+                <h2>Syllabus Balance</h2>
+                <div style="height: 150px;"><canvas id="pcmChart"></canvas></div>
+                <div style="margin-top: 15px;">
+                    <select id="subSelect">
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Math">Math</option>
+                    </select>
+                    <input type="number" id="hrsIn" placeholder="Enter Hours">
+                    <button class="btn btn-primary" onclick="logStudy()">Update Progress</button>
                 </div>
             </div>
 
-            <div class="bento-card" style="grid-column: span 2;">
-                <div class="stat-header"><h2>MOCK TEST ANALYSIS</h2></div>
-                <div style="height: 250px;"><canvas id="lineChart"></canvas></div>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <input type="number" id="scoreIn" placeholder="Last Score (300)">
-                    <button class="btn-primary" style="width: 150px" onclick="addScore()">Update</button>
+            <div class="card" style="grid-column: span 2;">
+                <h2>Mock Test Analysis</h2>
+                <div style="height: 220px;"><canvas id="scoreChart"></canvas></div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <input type="number" id="mockScore" placeholder="Test Score (out of 300)">
+                    <button class="btn btn-primary" style="width: 140px;" onclick="addScore()">Add Test</button>
                 </div>
             </div>
         </div>
 
-        <div class="bento-card">
-            <div class="stat-header"><h2>7-DAY TARGET PLANNER</h2></div>
-            <div class="planner-row" id="planner"></div>
+        <div class="card">
+            <h2>Weekly Roadmap</h2>
+            <div class="planner-grid" id="planner"></div>
         </div>
 
-        <div id="deadlines" style="display: flex; gap: 15px; overflow-x: auto;"></div>
+        <div class="card" style="background: var(--brand-soft); border: none;">
+            <p id="quote" style="color: var(--brand); font-weight: 500; margin: 0; font-size: 0.9rem;">"Consistency is the difference between failure and a Top 100 AIR."</p>
+        </div>
     </main>
 
     <script>
-        // Storage Keys
-        let data = JSON.parse(localStorage.getItem('p_data')) || { Physics: 0, Chemistry: 0, Math: 0 };
-        let scores = JSON.parse(localStorage.getItem('p_scores')) || [140, 165, 155, 190, 210];
-        let exams = JSON.parse(localStorage.getItem('p_exams')) || [];
-        let planner = JSON.parse(localStorage.getItem('p_plan')) || Array(7).fill().map(() => []);
-
-        let dChart, lChart;
-
-        // --- Charts Implementation ---
-        function initCharts() {
-            const dCtx = document.getElementById('doughnutChart').getContext('2d');
-            dChart = new Chart(dCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Phy', 'Chem', 'Math'],
-                    datasets: [{
-                        data: Object.values(data),
-                        backgroundColor: ['#818cf8', '#34d399', '#fb7185'],
-                        borderWidth: 0, cutout: '82%'
-                    }]
-                },
-                options: { plugins: { legend: { display: false } }, maintainAspectRatio: false }
-            });
-
-            const lCtx = document.getElementById('lineChart').getContext('2d');
-            lChart = new Chart(lCtx, {
-                type: 'line',
-                data: {
-                    labels: scores.map((_, i) => `Test ${i+1}`),
-                    datasets: [{
-                        label: 'AIR Projection',
-                        data: scores,
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        fill: true, tension: 0.4, pointRadius: 5
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-                    },
-                    plugins: { legend: { display: false } },
-                    maintainAspectRatio: false
-                }
-            });
+        // State
+        let studyData = JSON.parse(localStorage.getItem('ob_data')) || { Physics: 5, Chemistry: 5, Math: 5 };
+        let scores = JSON.parse(localStorage.getItem('ob_scores')) || [150, 165, 180, 175, 210];
+        let weekTasks = JSON.parse(localStorage.getItem('ob_week')) || Array(7).fill().map(() => []);
+        
+        // Timer Logic
+        let timer, seconds = 0, isRunning = false;
+        function toggleTimer() {
+            if(!isRunning) {
+                timer = setInterval(() => {
+                    seconds++;
+                    let h = Math.floor(seconds/3600), m = Math.floor((seconds%3600)/60), s = seconds%60;
+                    document.getElementById('timerDisplay').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                }, 1000);
+                document.getElementById('timerBtn').innerText = 'Stop';
+                document.getElementById('timerBtn').style.background = '#ef4444';
+            } else {
+                clearInterval(timer);
+                document.getElementById('timerBtn').innerText = 'Start';
+                document.getElementById('timerBtn').style.background = 'var(--brand)';
+            }
+            isRunning = !isRunning;
         }
+        function resetTimer() { clearInterval(timer); seconds = 0; isRunning = false; document.getElementById('timerDisplay').innerText = "00:00:00"; }
 
-        // --- Core Logic ---
+        // Charts
+        const pcmCtx = document.getElementById('pcmChart').getContext('2d');
+        const pcmChart = new Chart(pcmCtx, {
+            type: 'doughnut',
+            data: { labels: ['Phy','Chem','Math'], datasets: [{ data: Object.values(studyData), backgroundColor: ['#6366f1','#10b981','#f43f5e'], borderWidth: 0 }] },
+            options: { cutout: '80%', plugins: { legend: { display: false } } }
+        });
+
+        const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+        const scoreChart = new Chart(scoreCtx, {
+            type: 'line',
+            data: { labels: scores.map((_,i)=>`T${i+1}`), datasets: [{ label: 'Score', data: scores, borderColor: '#4f46e5', tension: 0.3, fill: true, backgroundColor: 'rgba(79, 70, 229, 0.05)' }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#f1f5f9' } }, x: { display: false } } }
+        });
+
+        // Functions
         function logStudy() {
             const sub = document.getElementById('subSelect').value;
-            const hrs = parseFloat(document.getElementById('hrsIn').value);
-            if(hrs) {
-                data[sub] += hrs;
-                localStorage.setItem('p_data', JSON.stringify(data));
-                location.reload();
-            }
+            const hr = parseFloat(document.getElementById('hrsIn').value);
+            if(hr) { studyData[sub] += hr; localStorage.setItem('ob_data', JSON.stringify(studyData)); location.reload(); }
         }
 
         function addScore() {
-            const s = parseInt(document.getElementById('scoreIn').value);
-            if(s) { scores.push(s); localStorage.setItem('p_scores', JSON.stringify(scores)); location.reload(); }
+            const s = parseInt(document.getElementById('mockScore').value);
+            if(s) { scores.push(s); localStorage.setItem('ob_scores', JSON.stringify(scores)); location.reload(); }
         }
 
-        function addExam() {
-            const n = document.getElementById('exName').value;
-            const d = document.getElementById('exDate').value;
-            if(n && d) { exams.push({n, d}); localStorage.setItem('p_exams', JSON.stringify(exams)); renderUI(); }
+        function updateCountdown() {
+            const date = document.getElementById('examDate').value;
+            const diff = Math.ceil((new Date(date) - new Date()) / 86400000);
+            document.getElementById('countdownBox').innerText = `${diff > 0 ? diff : 0} Days Left`;
+            localStorage.setItem('ob_exam', date);
         }
 
-        // --- UI Rendering ---
-        function renderUI() {
-            // Planner
-            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            document.getElementById('planner').innerHTML = days.map((day, i) => `
+        function renderPlanner() {
+            const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+            document.getElementById('planner').innerHTML = days.map((d, i) => `
                 <div class="day-col">
-                    <span class="day-label">${day}</span>
-                    <div id="tags-${i}">${planner[i].map(t => `<span class="tag">${t}</span>`).join('')}</div>
-                    <input type="text" placeholder="+" onkeydown="if(event.key==='Enter'){planner[${i}].push(this.value); localStorage.setItem('p_plan', JSON.stringify(planner)); renderUI();}" 
-                    style="font-size: 10px; margin-top: 10px; background: transparent; border: 1px dashed var(--border);">
+                    <span class="day-name">${d}</span>
+                    <div id="t-${i}">${weekTasks[i].map(t => `<span class="tag">${t}</span>`).join('')}</div>
+                    <input type="text" placeholder="+" onkeydown="if(event.key==='Enter'){weekTasks[${i}].push(this.value); localStorage.setItem('ob_week', JSON.stringify(weekTasks)); renderPlanner();}" style="font-size: 10px; border: none; background: #f8fafc; margin: 0; padding: 4px;">
                 </div>
             `).join('');
-
-            // Deadlines
-            document.getElementById('deadlines').innerHTML = exams.map(ex => {
-                const diff = Math.ceil((new Date(ex.d) - new Date()) / 86400000);
-                return `
-                    <div class="bento-card" style="min-width: 200px; padding: 15px;">
-                        <div style="font-size: 0.7rem; color: var(--text-muted)">${ex.n}</div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--math)">${diff > 0 ? diff : 0} Days</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // --- Timer Logic ---
-        let startTime, timerInt;
-        function startTimer() { startTime = Date.now(); timerInt = setInterval(() => {
-            const diff = Date.now() - startTime;
-            const h = Math.floor(diff/3600000);
-            const m = Math.floor((diff%3600000)/60000);
-            const s = Math.floor((diff%60000)/1000);
-            document.getElementById('swTime').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-        }, 1000); }
-        function stopTimer() { clearInterval(timerInt); }
-
-        function uploadPhoto(e) {
-            const reader = new FileReader();
-            reader.onload = () => { document.getElementById('pfp').src = reader.result; localStorage.setItem('p_pfp', reader.result); };
-            reader.readAsDataURL(e.target.files[0]);
         }
 
         window.onload = () => {
-            if(localStorage.getItem('p_pfp')) document.getElementById('pfp').src = localStorage.getItem('p_pfp');
-            initCharts(); renderUI();
+            if(localStorage.getItem('ob_exam')) {
+                document.getElementById('examDate').value = localStorage.getItem('ob_exam');
+                updateCountdown();
+            }
+            renderPlanner();
         };
     </script>
 </body>
