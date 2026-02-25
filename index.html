@@ -3,79 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam Command Center</title>
+    <title>NEET Conqueror Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 20px; color: #1e293b; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        h2 { margin-top: 0; color: var(--primary); font-size: 1.2rem; }
-        input, textarea, button { width: 100%; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { opacity: 0.9; }
-        #countdown { font-size: 1.5rem; font-weight: bold; text-align: center; color: #e11d48; }
-        .log-entry { font-size: 0.85rem; border-bottom: 1px solid #eee; padding: 5px 0; }
+        :root { --neet-blue: #0ea5e9; --bio-green: #22c55e; --chem-orange: #f59e0b; --phy-purple: #8b5cf6; --bg: #0f172a; --card: #1e293b; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #f8fafc; margin: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #334155; }
+        h2 { margin: 0 0 15px 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--neet-blue); }
+        
+        /* 7-Column Tracker */
+        .weekly-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 10px; }
+        .day-col { background: #334155; padding: 8px; border-radius: 8px; text-align: center; }
+        .day-label { font-weight: bold; font-size: 0.7rem; margin-bottom: 5px; display: block; }
+        .slot-input { width: 100%; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 4px; padding: 4px; font-size: 0.8rem; text-align: center; }
+
+        /* Addable Exams */
+        #exam-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .exam-tag { background: #334155; padding: 10px; border-radius: 8px; min-width: 150px; position: relative; }
+        .remove-btn { position: absolute; top: 2px; right: 5px; cursor: pointer; color: #ef4444; font-size: 0.8rem; }
+
+        input, select, button { background: #334155; border: 1px solid #475569; color: white; padding: 10px; border-radius: 6px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+        button { background: var(--neet-blue); font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #0284c7; }
+        .stats-row { display: flex; justify-content: space-between; align-items: center; }
+        #chart-container { width: 100%; max-width: 250px; margin: 0 auto; }
     </style>
 </head>
 <body>
 
-<div class="grid">
-    <div class="card">
-        <h2>⏳ Exam Countdown</h2>
-        <input type="date" id="examDate" onchange="updateCountdown()">
-        <div id="countdown">Set a date!</div>
+    <div class="card" style="margin-bottom: 20px;">
+        <h2>📅 Add Upcoming Exams</h2>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="newExamName" placeholder="Exam Name (e.g. NEET UG)">
+            <input type="date" id="newExamDate">
+            <button onclick="addExam()" style="width: 150px;">Add Exam</button>
+        </div>
+        <div id="exam-container"></div>
     </div>
 
-    <div class="card">
-        <h2>📝 Study Log</h2>
-        <input type="text" id="subject" placeholder="Subject (e.g., Physics)">
-        <input type="number" id="hours" placeholder="Hours studied">
-        <button onclick="logStudy()">Log Session</button>
-        <div id="logHistory" style="max-height: 150px; overflow-y: auto;"></div>
+    <div class="grid">
+        <div class="card">
+            <h2>📊 NEET Syllabus Coverage</h2>
+            <div class="stats-row">
+                <div style="width: 45%;">
+                    <select id="subject">
+                        <option value="Biology">Biology (Botany/Zoology)</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                    </select>
+                    <input type="number" id="hours" placeholder="Hours Logged">
+                    <button onclick="logStudy()">Update Progress</button>
+                </div>
+                <div id="chart-container">
+                    <canvas id="prepChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>💡 Biology Mnemonics / Key Formulas</h2>
+            <textarea id="notesArea" style="width: 100%; height: 120px; background: #0f172a; color: #cbd5e1; border-radius: 6px; padding: 10px; border: 1px solid #475569;" oninput="saveNotes()" placeholder="Ex: King Philip Came Over For Good Soup (Classification System)"></textarea>
+        </div>
     </div>
 
-    <div class="card">
-        <h2>📊 Topic Distribution</h2>
-        <canvas id="prepChart"></canvas>
+    <div class="card" style="margin-top: 20px;">
+        <h2>⏳ Weekly Study Slots (Hr/Day)</h2>
+        <div class="weekly-grid" id="weekly-tracker">
+            </div>
+        <button onclick="saveSlots()" style="margin-top: 15px; width: auto; padding: 10px 30px;">Save Weekly Plan</button>
     </div>
-
-    <div class="card">
-        <h2>📒 Revision Notes</h2>
-        <textarea id="notesArea" rows="8" placeholder="Quick formulas or reminders..." oninput="saveNotes()"></textarea>
-    </div>
-</div>
 
 <script>
-    let studyData = JSON.parse(localStorage.getItem('studyData')) || {};
+    let studyData = JSON.parse(localStorage.getItem('neetStudyData')) || { Biology: 0, Physics: 0, Chemistry: 0 };
+    let exams = JSON.parse(localStorage.getItem('neetExams')) || [];
+    let slots = JSON.parse(localStorage.getItem('neetSlots')) || [0, 0, 0, 0, 0, 0, 0];
     let chart;
 
-    // --- Countdown Logic ---
-    function updateCountdown() {
-        const target = new Date(document.getElementById('examDate').value);
-        localStorage.setItem('examDate', target);
-        
-        const timer = setInterval(() => {
-            const now = new Date().getTime();
-            const diff = target - now;
-            if (diff < 0) { clearInterval(timer); document.getElementById('countdown').innerHTML = "EXAM DAY!"; return; }
-            
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            document.getElementById('countdown').innerHTML = `${days}d ${hours}h left`;
-        }, 1000);
+    const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+
+    // --- Addable Exams Logic ---
+    function addExam() {
+        const name = document.getElementById('newExamName').value;
+        const date = document.getElementById('newExamDate').value;
+        if (name && date) {
+            exams.push({ name, date });
+            localStorage.setItem('neetExams', JSON.stringify(exams));
+            renderExams();
+        }
     }
 
-    // --- Chart & Logging Logic ---
+    function removeExam(index) {
+        exams.splice(index, 1);
+        localStorage.setItem('neetExams', JSON.stringify(exams));
+        renderExams();
+    }
+
+    function renderExams() {
+        const container = document.getElementById('exam-container');
+        container.innerHTML = '';
+        exams.forEach((ex, i) => {
+            const diff = new Date(ex.date) - new Date();
+            const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            container.innerHTML += `
+                <div class="exam-tag">
+                    <span class="remove-btn" onclick="removeExam(${i})">✖</span>
+                    <strong>${ex.name}</strong><br>
+                    <span style="color: #fb7185; font-size: 1.2rem; font-weight: bold;">${daysLeft > 0 ? daysLeft : 0} Days</span>
+                </div>`;
+        });
+    }
+
+    // --- Study Log & Chart Logic ---
     function logStudy() {
         const sub = document.getElementById('subject').value;
         const hr = parseFloat(document.getElementById('hours').value);
-        
         if (sub && hr) {
-            studyData[sub] = (studyData[sub] || 0) + hr;
-            localStorage.setItem('studyData', JSON.stringify(studyData));
+            studyData[sub] += hr;
+            localStorage.setItem('neetStudyData', JSON.stringify(studyData));
             updateChart();
-            addLogToUI(sub, hr);
         }
     }
 
@@ -88,31 +134,43 @@
                 labels: Object.keys(studyData),
                 datasets: [{
                     data: Object.values(studyData),
-                    backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6']
+                    backgroundColor: ['#22c55e', '#8b5cf6', '#f59e0b'],
+                    borderWidth: 0
                 }]
-            }
+            },
+            options: { plugins: { legend: { display: false } } }
         });
     }
 
-    function addLogToUI(sub, hr) {
-        const div = document.createElement('div');
-        div.className = 'log-entry';
-        div.innerHTML = `<strong>${sub}</strong>: ${hr} hrs - ${new Date().toLocaleDateString()}`;
-        document.getElementById('logHistory').prepend(div);
+    // --- 7-Column Tracker Logic ---
+    function renderSlots() {
+        const container = document.getElementById('weekly-tracker');
+        container.innerHTML = days.map((day, i) => `
+            <div class="day-col">
+                <span class="day-label">${day}</span>
+                <input type="number" class="slot-input" value="${slots[i]}" data-idx="${i}">
+            </div>
+        `).join('');
+    }
+
+    function saveSlots() {
+        const inputs = document.querySelectorAll('.slot-input');
+        inputs.forEach((input, i) => slots[i] = input.value);
+        localStorage.setItem('neetSlots', JSON.stringify(slots));
+        alert('Weekly plan saved!');
     }
 
     function saveNotes() {
-        localStorage.setItem('prepNotes', document.getElementById('notesArea').value);
+        localStorage.setItem('neetNotes', document.getElementById('notesArea').value);
     }
 
-    // Initialization
+    // Initial Load
     window.onload = () => {
-        if(localStorage.getItem('examDate')) {
-            document.getElementById('examDate').value = new Date(localStorage.getItem('examDate')).toISOString().split('T')[0];
-            updateCountdown();
-        }
-        document.getElementById('notesArea').value = localStorage.getItem('prepNotes') || "";
+        renderExams();
         updateChart();
+        renderSlots();
+        document.getElementById('notesArea').value = localStorage.getItem('neetNotes') || "";
+        setInterval(renderExams, 60000); // Update countdown every minute
     };
 </script>
 
